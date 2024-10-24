@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id        String    @id @default(cuid())
+  email     String    @unique
+  name      String?
+  role      UserRole  @default(INVESTOR)
+  questions Question[]
+  answers   Answer[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Question {
+  id          String    @id @default(cuid())
+  title       String
+  description String
+  category    String
+  status      QuestionStatus @default(OPEN)
+  attachments Attachment[]
+  answers     Answer[]
+  author      User      @relation(fields: [authorId], references: [id])
+  authorId    String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Answer {
+  id          String    @id @default(cuid())
+  content     String
+  attachments Attachment[]
+  question    Question  @relation(fields: [questionId], references: [id])
+  questionId  String
+  author      User      @relation(fields: [authorId], references: [id])
+  authorId    String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Attachment {
+  id          String    @id @default(cuid())
+  filename    String
+  path        String
+  mimetype    String
+  size        Int
+  question    Question? @relation(fields: [questionId], references: [id])
+  questionId  String?
+  answer      Answer?   @relation(fields: [answerId], references: [id])
+  answerId    String?
+  createdAt   DateTime  @default(now())
+}
+
+enum UserRole {
+  ADMIN
+  MANAGER
+  INVESTOR
+}
+
+enum QuestionStatus {
+  OPEN
+  ANSWERED
+  CLOSED
+}
